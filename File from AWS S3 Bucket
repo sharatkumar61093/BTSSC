@@ -1,0 +1,28 @@
+Getting the File from AWS S3 Bucket 
+-----------------------------------------
+Controller
+----------------
+@GetMapping("/download/{bucketname}/{filename})
+   public ResponseEntity<byte[]> download(@PathVariable("bucketname") String bucketname , @PathVariable("filename") String filename){
+
+      HttpHeaders  httpHeaders= new HttpHeaders();
+      httpHeaders.add("Content-type", MediaType.ALL_VALUE);
+      httpHeaders.add("Content-Disposition","attachment:filename="+filename);
+      byte[] bytes = s3Service.downloadFile(bucketname,filename);
+      return ResponseEntity.status(HttpStatus.OK).headers(httpHeaders).body(bytes);
+   }
+   
+  -------------------------------------------------------------------
+  Service
+  ----------------------
+     public byte[] downloadFile(String bucketname,String filename,){
+
+        S3Object s3Object= s3.getObject(bucketname,filename);
+        S3ObjectInputStream objectContent = s3Object.getObjectContent();
+        try {
+            return IOUtils.toByteArray(objectContent);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
